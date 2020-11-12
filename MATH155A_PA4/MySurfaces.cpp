@@ -236,6 +236,7 @@ void MyRemeshFloor()
 	// The code fragment for allocating/deleting arrays uses C++ new and delete[].
 	// You may optionally instead use the Standard Template Library std::vector<float> if you wish.
     // Floor vertices.
+    int stripLen = (meshRes + 1) * 2; // array length of a triangle strip
     int numFloorVerts = (meshRes + 1)*(meshRes + 1);
     
     float* floorVerts = new float[3 * numFloorVerts];
@@ -253,16 +254,19 @@ void MyRemeshFloor()
     // Calculate all vertex values
     for (int l = 0; l < meshRes + 1; l++) { // indices along z
         for (int m = 0; m < meshRes + 1; m++) { // indices along x dimension
-            floorVerts[3 * (((meshRes + 1) * l) + m)] = ((m / meshRes) * 10) - 5.0;
-            floorVerts[3 * (((meshRes + 1) * l) + m) + 1] = 0.0; // y remains constant throughout
-            floorVerts[3 * (((meshRes + 1) * l) + m) + 2] = ((l / meshRes) * 10) - 5.0;
+            float xcoord = (((float)m / (float)meshRes) * 10.0) - 5.0; // define x coordinate as a float
+            float zcoord = (((float)l / (float)meshRes) * 10.0) - 5.0; // define y coordinate as a float
+            floorVerts[3 * (((meshRes + 1) * l) + m)] = xcoord;
+            floorVerts[3 * (((meshRes + 1) * l) + m) + 1] = 0.0f; // y remains constant throughout
+            floorVerts[3 * (((meshRes + 1) * l) + m) + 2] = zcoord;
         }
     }
     // create floor element array
     for (int i = 0; i < meshRes; i++) {
-        for (int j = 0; j < numFloorElts / (2 * meshRes); j++) {
-            floorElements[((numFloorElts / meshRes) * i + j) * 2] = j + meshRes + 1 * i;
-            floorElements[((numFloorElts / meshRes) * i + j) * 2 + 1] = j + meshRes + 1 + meshRes + 1 * i;
+        for (int j = 0; j < stripLen; j++) {
+            floorElements[((meshRes + 1) * i + j) * 2] = j + (meshRes + 1) * i;
+            floorElements[((meshRes + 1) * i + j) * 2 + 1] = j + meshRes + 1 + (meshRes + 1) * i;
+            //cout << floorElements;
         }
     }
 
@@ -281,14 +285,16 @@ void MyRemeshFloor()
     // Load data into the VBO and EBO using glBindBuffer and glBufferData commands
     // YOU NEED TO WRITE THIS CODE FOR THE PROJECT 4
     glBindBuffer(GL_ARRAY_BUFFER, myVBO[iFloor]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(floorVerts) * sizeof(float), floorVerts, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(*floorVerts) * sizeof(float), floorVerts, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myEBO[iFloor]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorElements) * sizeof(unsigned int), floorElements, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(*floorElements) * sizeof(unsigned int), floorElements, GL_STATIC_DRAW);
 
     // The array should have been copied into the GPU buffers now.
     // If you use "new" above, you MUST delete the arrays here to avoid a memory leak.
+    
     delete[] floorVerts;
     delete[] floorElements;
+    
 }
 
 // ****
@@ -320,10 +326,11 @@ void MyRenderFloor()
     glUniformMatrix4fv(modelviewMatLocation, 1, false, matEntries);
     
     // Draw the four triangle strips
-    glDrawElements(GL_TRIANGLE_STRIP, 10, GL_UNSIGNED_INT, (void*)0);                              // Draw first triangle strip (back strip)
-    glDrawElements(GL_TRIANGLE_STRIP, 10, GL_UNSIGNED_INT, (void*)(10 * sizeof(unsigned int)));    // Draw second triangle strip
-    glDrawElements(GL_TRIANGLE_STRIP, 10, GL_UNSIGNED_INT, (void*)(20 * sizeof(unsigned int)));    // Draw third triangle strip
-    glDrawElements(GL_TRIANGLE_STRIP, 10, GL_UNSIGNED_INT, (void*)(30 * sizeof(unsigned int)));    // Draw fourth triangle strip (front strip)
+    for (int i = 0; i < meshRes; i++) {
+        int stripLen = (meshRes + 1) * 2;
+        glDrawElements(GL_TRIANGLE_STRIP, stripLen, GL_UNSIGNED_INT, (void*)(stripLen * i * sizeof(unsigned int)));
+    }
+
 }
 
 // ****
