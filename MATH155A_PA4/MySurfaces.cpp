@@ -62,7 +62,7 @@ void MySetupSurfaces() {
 
     glVertexAttribPointer(vPos_loc, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);	// Store vertices in the VBO
     glEnableVertexAttribArray(vPos_loc);									// Enable the stored vertices
- 
+    
     // For the circular surface:
     // Allocate the needed VAO, VBO< EBO
     // The normal vectors is specified separately for each vertex. (It is not a generic attribute.)
@@ -93,11 +93,11 @@ void MySetupSurfaces() {
 void MyRemeshSurfaces() 
 {
     // WRITE MyRemeshFloor (see below) AND USE IT INSTEAD OF RemeshPlaneDemo
-    MyRemeshFloor();
-    // MyRemeshFloor();
+     RemeshFloorDemo();
+    //MyRemeshFloor();
 
     // WRITE MyRemeshCircularSurf (see below) AND USE IT INSTEAD OF RemeshCircularDemo
-    RemeshCircularDemo();
+    // RemeshCircularDemo();
     // MyRemeshCircularSurf();
 
     check_for_opengl_errors();      // Watch the console window for error messages!
@@ -111,11 +111,11 @@ void MyRemeshSurfaces()
 
 void MyRenderSurfaces() {
     // WRITE MyRemeshFloor (see below) AND USE IT INSTEAD OF RemeshPlaneDemo
+    // RenderFloorDemo();
     MyRenderFloor();
-    // MyRenderFloor();
 
     // WRITE MyRemeshCircularSurf (see below) AND USE IT INSTEAD OF RemeshCircularDemo
-    RenderCircularDemo();
+    // RenderCircularDemo();
     // MyRenderCircularSurf();
 
     check_for_opengl_errors();      // Watch the console window for error messages!
@@ -134,6 +134,7 @@ void MyRenderSurfaces() {
 void RemeshFloorDemo()
 {
     // Floor vertices.
+    ///*
     float floorVerts[][3] = {
         {-5.0f, 0.0f, -5.0f },  {-2.5f, 0.0f, -5.0f }, { 0.0f, 0.0f, -5.0f }, { 2.5f, 0.0f, -5.0f }, { 5.0f, 0.0f, -5.0f },  // Back row
         { -5.0f, 0.0f, -2.5f }, { -2.5f, 0.0f, -2.5f }, { 0.0f, 0.0f, -2.5f }, { 2.5f, 0.0f, -2.5f }, { 5.0f, 0.0f, -2.5f },  // Fourth row
@@ -141,6 +142,65 @@ void RemeshFloorDemo()
         { -5.0f, 0.0f,  2.5f }, { -2.5f, 0.0f,  2.5f }, { 0.0f, 0.0f,  2.5f }, { 2.5f, 0.0f,  2.5f }, { 5.0f, 0.0f,  2.5f },  // Second row
         { -5.0f, 0.0f,  5.0f }, { -2.5f, 0.0f,  5.0f }, { 0.0f, 0.0f,  5.0f }, { 2.5f, 0.0f,  5.0f }, { 5.0f, 0.0f,  5.0f },  // Front row
     };
+    printf("size of floorVerts: %3d \n", sizeof(floorVerts));
+    //*/
+    
+    
+    ///*
+    //  --------- area for testing your code -----------
+    
+    int stripLen = (meshRes + 1) * 2; // array length of a triangle strip
+    int numFloorVerts = (meshRes + 1)*(meshRes + 1);
+    
+    //float* floorVerts = new float[3 * numFloorVerts];
+    
+    // Floor elements (indices to vertices in a triangle strip)
+    int numFloorElts = meshRes * 2 * (meshRes + 1);
+    //unsigned int* floorElements = new unsigned int[numFloorElts];
+    
+    /*
+    // YOU CAN NOW ACCESS floorVerts AND floorElements WITH THE SAME
+    // SYNTAX AS ARRAYS.  FOR EXAMPLE,
+    // floorVerts[0], floorVerts[1], floorVerts[2] ARE THE x,y,z
+    // COMPONENTS OF THE FIRST VERTEX.
+    
+    // CALCULATE THE CONTENTS OF THE TWO ARRAYS.
+    // THEN LOAD THE DATA INTO THE VBO AND EBO BUFFERS.
+    
+    // Calculate all vertex values
+    
+    for (int l = 0; l < meshRes + 1; l++) { // indices along z
+        for (int m = 0; m < meshRes + 1; m++) { // indices along x dimension
+            float xcoord = (((float)m / (float)meshRes) * 10.0) - 5.0; // define x coordinate as a float
+            float zcoord = (((float)l / (float)meshRes) * 10.0) - 5.0; // define y coordinate as a float
+            int index = 3 * (((meshRes + 1) * l) + m);
+            printf("the index: %d \n", index);
+            floorVerts[index] = xcoord;
+            floorVerts[index + 1] = 0.0f; // y remains constant throughout
+            floorVerts[index + 2] = zcoord;
+        }
+    }
+    for (int i = 0; i < 75; i++) {
+        printf("%f \n", floorVerts[i]);
+    }
+    //  -------- ^^area for testing your code^^ ---------
+     */
+    
+    
+    unsigned int* floorElements = new unsigned int[numFloorElts];
+    // create floor element array
+    for (int i = 0; i < (meshRes + 1) * (meshRes); i++) {
+        floorElements[i * 2] = i;
+        floorElements[i * 2 + 1] = i + (meshRes + 1);
+        //cout << floorElements;
+    }
+    for (int k = 0; k < numFloorElts; k++) {
+        printf("%d, ", floorElements[k]);
+    }
+    printf("\n");
+    
+
+    /*
     // Floor elements (indices to vertices in a triangle strip)
     unsigned int floorElements[] = {
         0,5,1,6,2,7,3,8,4,9,            // Elements for first triangle strip (back strip)
@@ -148,10 +208,13 @@ void RemeshFloorDemo()
         10,15,11,16,12,17,13,18,14,19,  // Elements for third triangle strip
         15,20,16,21,17,22,18,23,19,24,  // Elements for fourth triangle strip (front strip)
     };
+    */
+    
+    
     glBindBuffer(GL_ARRAY_BUFFER, myVBO[iFloor]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(floorVerts) * sizeof(float), floorVerts, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myEBO[iFloor]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorElements) * sizeof(unsigned int), floorElements, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(*floorElements) * sizeof(unsigned int), floorElements, GL_STATIC_DRAW);
 }
 
 void RemeshCircularDemo()
@@ -203,6 +266,23 @@ void RenderFloorDemo()
     glDrawElements(GL_TRIANGLE_STRIP, 10, GL_UNSIGNED_INT, (void*)(30 * sizeof(unsigned int)));    // Draw fourth triangle strip (front strip)
 }
 
+void RenderFloorDemo1()
+{
+    glBindVertexArray(myVAO[iFloor]);
+    
+    // Set the uniform values (they are not stored with the VAO and thus must be set again everytime
+    glVertexAttrib3f(vNormal_loc, 0.0, 1.0, 0.0);    // Generic vertex attribute: Normal is (0,1,0) for the floor.
+    glVertexAttrib3f(vColor_loc, 1.0f, 0.4f, 0.4f);     // Generic vertex attribute: Color (light red) for the floor.
+    viewMatrix.DumpByColumns(matEntries);
+    glUniformMatrix4fv(modelviewMatLocation, 1, false, matEntries);
+    
+    // Draw the four triangle strips
+    glDrawElements(GL_TRIANGLE_STRIP, 10, GL_UNSIGNED_INT, (void*)0);                              // Draw first triangle strip (back strip)
+    glDrawElements(GL_TRIANGLE_STRIP, 10, GL_UNSIGNED_INT, (void*)(10 * sizeof(unsigned int)));    // Draw second triangle strip
+    glDrawElements(GL_TRIANGLE_STRIP, 10, GL_UNSIGNED_INT, (void*)(20 * sizeof(unsigned int)));    // Draw third triangle strip
+    glDrawElements(GL_TRIANGLE_STRIP, 10, GL_UNSIGNED_INT, (void*)(30 * sizeof(unsigned int)));    // Draw fourth triangle strip (front strip)
+}
+
 void RenderCircularDemo()
 {
     glBindVertexArray(myVAO[iCircularSurf]);
@@ -237,11 +317,12 @@ void MyRemeshFloor()
 	// You may optionally instead use the Standard Template Library std::vector<float> if you wish.
     // Floor vertices.
     int stripLen = (meshRes + 1) * 2; // array length of a triangle strip
-    int numFloorVerts = (meshRes + 1)*(meshRes + 1);
+    
+    int numFloorVerts = (meshRes + 1)*(meshRes + 1); // number of floor vertices needed
     
     float* floorVerts = new float[3 * numFloorVerts];
     // Floor elements (indices to vertices in a triangle strip)
-    int numFloorElts = meshRes * 2 * (meshRes + 1);    
+    int numFloorElts = meshRes * 2 * (meshRes + 1);
     unsigned int* floorElements = new unsigned int[numFloorElts];
     // YOU CAN NOW ACCESS floorVerts AND floorElements WITH THE SAME
     // SYNTAX AS ARRAYS.  FOR EXAMPLE,
@@ -256,19 +337,23 @@ void MyRemeshFloor()
         for (int m = 0; m < meshRes + 1; m++) { // indices along x dimension
             float xcoord = (((float)m / (float)meshRes) * 10.0) - 5.0; // define x coordinate as a float
             float zcoord = (((float)l / (float)meshRes) * 10.0) - 5.0; // define y coordinate as a float
-            floorVerts[3 * (((meshRes + 1) * l) + m)] = xcoord;
-            floorVerts[3 * (((meshRes + 1) * l) + m) + 1] = 0.0f; // y remains constant throughout
-            floorVerts[3 * (((meshRes + 1) * l) + m) + 2] = zcoord;
+            int index = 3 * (((meshRes + 1) * l) + m);
+            floorVerts[index] = xcoord;
+            floorVerts[index + 1] = 0.0f; // y remains constant throughout
+            floorVerts[index + 2] = zcoord;
         }
     }
+    
+    printf("size of floorVerts: %3lu \n", sizeof(floorVerts)); // check the size of floorverts
+    
+    
     // create floor element array
-    for (int i = 0; i < meshRes; i++) {
-        for (int j = 0; j < stripLen; j++) {
-            floorElements[((meshRes + 1) * i + j) * 2] = j + (meshRes + 1) * i;
-            floorElements[((meshRes + 1) * i + j) * 2 + 1] = j + meshRes + 1 + (meshRes + 1) * i;
+    for (int i = 0; i < ((meshRes + 1) * (meshRes + 1)) - (meshRes + 1); i++) {
+            floorElements[i * 2] = i;
+            floorElements[i * 2 + 1] = i + (meshRes + 1);
             //cout << floorElements;
-        }
     }
+    
 
     // SOME SUGGESTED TEST CODE: Can be used to examine contents of your arrays
     printf("floorVerts:\n");
@@ -292,8 +377,8 @@ void MyRemeshFloor()
     // The array should have been copied into the GPU buffers now.
     // If you use "new" above, you MUST delete the arrays here to avoid a memory leak.
     
-    delete[] floorVerts;
     delete[] floorElements;
+    delete[] floorVerts;
     
 }
 
@@ -326,11 +411,24 @@ void MyRenderFloor()
     glUniformMatrix4fv(modelviewMatLocation, 1, false, matEntries);
     
     // Draw the four triangle strips
+    /*
+    glDrawElements(GL_TRIANGLE_STRIP, 30, GL_UNSIGNED_INT, (void*)0);                              // Draw first triangle strip (back strip)
+    glDrawElements(GL_TRIANGLE_STRIP, 30, GL_UNSIGNED_INT, (void*)(30 * sizeof(unsigned int)));    // Draw second triangle strip
+    glDrawElements(GL_TRIANGLE_STRIP, 30, GL_UNSIGNED_INT, (void*)(60 * sizeof(unsigned int)));    // Draw third triangle strip
+    glDrawElements(GL_TRIANGLE_STRIP, 30, GL_UNSIGNED_INT, (void*)(90 * sizeof(unsigned int)));    // Draw fourth triangle strip (front strip)
+    */
+    
+    int stripLen = (meshRes + 1) * 2; // define the strip length for easier sytax down the line
+    
     for (int i = 0; i < meshRes; i++) {
-        int stripLen = (meshRes + 1) * 2;
+        int stripLeni = stripLen * i;
         glDrawElements(GL_TRIANGLE_STRIP, stripLen, GL_UNSIGNED_INT, (void*)(stripLen * i * sizeof(unsigned int)));
     }
-
+    
+    
+/*    int stripLen = (meshRes + 1) * 2;
+    glDrawElements(GL_TRIANGLE_STRIP, stripLen, GL_UNSIGNED_INT, (void*)((meshRes + 1) * sizeof(unsigned int)));
+    */
 }
 
 // ****
